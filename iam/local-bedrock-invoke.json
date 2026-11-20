@@ -1,0 +1,19 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "InvokeOnlyTheTwoDemoModels",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream"
+      ],
+      "Resource": [
+        "arn:aws:bedrock:*::foundation-model/amazon.nova-lite-v1:0",
+        "arn:aws:bedrock:*::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0",
+        "arn:aws:bedrock:ap-southeast-2:ACCOUNT_ID:inference-profile/apac.amazon.nova-lite-v1:0",
+        "arn:aws:bedrock:ap-southeast-2:ACCOUNT_ID:inference-profile/apac.anthropic.claude-haiku-4-5-20251001-v1:0"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+# secrets — never commit
+.env
+.env.*
+!.env.example
+*.pem
+samconfig.local.toml
+
+# python / tooling
+.venv/
+__pycache__/
+*.pyc
+.aws-sam/
+.pytest_cache/
+.ruff_cache/
+
+# local runtime state
+.chaos
+.run/
+loadgen/.playwright/
+screenshots/raw/
+.DS_Store

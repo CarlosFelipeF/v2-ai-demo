@@ -1,0 +1,10 @@
+[project]
+name = "gateway"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "boto3>=1.44.7",
+    "litellm[proxy]>=1.110.2",
+    "opentelemetry-exporter-otlp-proto-http>=1.45.2",
+    "opentelemetry-sdk>=1.45.2",
+]

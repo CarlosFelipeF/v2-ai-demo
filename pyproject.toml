@@ -1,0 +1,27 @@
+[project]
+name = "v2-ai-demo"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "arize-otel>=0.14.1",
+    "arize-phoenix-evals>=3.10.0",
+    "arize[tracing]>=8.65.0",
+    "boto3>=1.44.7",
+    "fastapi>=0.165.0",
+    "httpx>=0.28.1",
+    "mangum>=0.22.0",
+    "openinference-instrumentation-strands-agents>=0.1.21",
+    "opentelemetry-exporter-otlp-proto-http>=1.45.2",
+    "opentelemetry-instrumentation-fastapi>=0.66b2",
+    "opentelemetry-instrumentation-httpx>=0.66b2",
+    "opentelemetry-sdk>=1.45.2",
+    "playwright>=1.65.2",
+    "pyyaml>=6.0.3",
+    "strands-agents[openai]>=1.65.0",
+    "uvicorn>=0.54.0",
+]
+
+[tool.uv.workspace]
+members = [
+    "src/gateway",
+]

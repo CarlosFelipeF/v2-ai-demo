@@ -1,0 +1,32 @@
+# LiteLLM AI gateway — the hop where traces usually break. Here it continues the
+# incoming W3C traceparent (LiteLLM OTel integration) and adds its own span with
+# model, tokens and cost, then calls Bedrock.
+model_list:
+  - model_name: claims-llm                      # what the app asks for
+    litellm_params:
+      model: os.environ/LITELLM_PRIMARY_MODEL   # e.g. bedrock/converse/apac.amazon.nova-lite-v1:0
+      aws_region_name: os.environ/AWS_REGION
+  - model_name: claims-llm-fallback
+    litellm_params:
+      model: os.environ/LITELLM_FALLBACK_MODEL
+      aws_region_name: os.environ/AWS_REGION
+  - model_name: judge-llm                       # LLM-as-judge for Arize evals
+    litellm_params:
+      model: os.environ/LITELLM_PRIMARY_MODEL
+      aws_region_name: os.environ/AWS_REGION
+
+router_settings:
+  fallbacks: [{"claims-llm": ["claims-llm-fallback"]}]
+  num_retries: 1
+  timeout: 30
+
+litellm_settings:
+  callbacks: ["otel", "chaos_hook.chaos_instance"]
+  drop_params: true
+  # Hard spend cap for the whole gateway (USD). Requests fail once exceeded.
+  max_budget: 1.0
+  budget_duration: 1d
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  disable_spend_logs: true

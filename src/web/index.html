@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claims Assistant</title>
+<!--DT_RUM_SNIPPET-->
+<style>
+  :root { --bg:#f5f7fa; --card:#fff; --ink:#1b2430; --muted:#5b6675; --accent:#0b6e4f; --line:#dde3ea; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#10151c; --card:#18202a; --ink:#e7ecf2; --muted:#9aa6b4; --accent:#3fbf8f; --line:#2a3542; } }
+  * { box-sizing:border-box; }
+  body { margin:0; font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif; background:var(--bg); color:var(--ink); }
+  header { padding:16px 20px; border-bottom:1px solid var(--line); background:var(--card); }
+  header b { color:var(--accent); }
+  main { max-width:760px; margin:0 auto; padding:20px 16px 120px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .chips button { border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:999px; padding:6px 12px; cursor:pointer; font-size:14px; }
+  .msg { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin:10px 0; white-space:pre-wrap; }
+  .msg.user { border-left:4px solid var(--muted); }
+  .msg.bot { border-left:4px solid var(--accent); }
+  .meta { font:12px/1.4 ui-monospace,Menlo,monospace; color:var(--muted); margin-top:6px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .meta button { font:inherit; border:1px solid var(--line); background:transparent; color:var(--muted); border-radius:6px; padding:1px 6px; cursor:pointer; }
+  form { position:fixed; left:0; right:0; bottom:0; background:var(--card); border-top:1px solid var(--line); padding:12px 16px; }
+  form div { max-width:760px; margin:0 auto; display:flex; gap:8px; }
+  input { flex:1; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); font-size:16px; }
+  form button { padding:10px 16px; border:0; border-radius:8px; background:var(--accent); color:#fff; font-weight:600; cursor:pointer; }
+  .err { border-left-color:#c0392b !important; }
+</style>
+</head>
+<body>
+<header><b>Southern Cross Mutual</b> · Claims Assistant</header>
+<main>
+  <div class="chips">
+    <button data-testid="q-storm" data-q="A storm damaged my roof. Policy HOME-1001, damage is $18,500. What will I get?">Storm claim</button>
+    <button data-testid="q-flood" data-q="My house flooded. I'm on HOME-1001 and repairs are $40,000. Am I covered?">Flood claim</button>
+    <button data-testid="q-hail" data-q="Hail dented my car, policy MOTOR-2002, quote is $3,200. How much is the payout?">Hail claim (NZ)</button>
+    <button data-testid="q-missing" data-q="What's the excess on policy HOME-1003?">Unknown policy</button>
+  </div>
+  <div id="log"></div>
+</main>
+<form id="f">
+  <div><input id="q" data-testid="question" placeholder="Ask about a policy or claim…" autocomplete="off" required>
+  <button data-testid="send">Ask</button></div>
+</form>
+<script>
+  const log = document.getElementById('log'), q = document.getElementById('q');
+  const sid = (crypto.randomUUID && crypto.randomUUID()) || String(Date.now());
+  function add(cls, text) { const d = document.createElement('div'); d.className = 'msg ' + cls; d.textContent = text; log.appendChild(d); d.scrollIntoView({behavior:'smooth'}); return d; }
+  async function ask(question) {
+    add('user', question);
+    const pending = add('bot', 'Thinking…');
+    try {
+      const r = await fetch('api/ask', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({question, session_id: sid, scenario: window.__SCENARIO || null}) });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.detail || r.statusText);
+      pending.textContent = j.answer;
+      const m = document.createElement('div'); m.className = 'meta';
+      m.innerHTML = `<span data-testid="trace-id">trace ${j.trace_id}</span><span>${j.latency_ms} ms</span>`;
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = 'copy trace ID';
+      b.onclick = () => navigator.clipboard.writeText(j.trace_id); m.appendChild(b); pending.appendChild(m);
+    } catch (e) { pending.textContent = 'Sorry, something went wrong: ' + e.message; pending.classList.add('err'); }
+  }
+  document.getElementById('f').addEventListener('submit', e => { e.preventDefault(); const v = q.value.trim(); if (v) { q.value = ''; ask(v); } });
+  document.querySelectorAll('.chips button').forEach(b => b.addEventListener('click', () => ask(b.dataset.q)));
+</script>
+</body>
+</html>
